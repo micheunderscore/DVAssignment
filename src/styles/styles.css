@@ -1,0 +1,169 @@
+h1,
+.textbox,
+.whitebox {
+  background-color: #fff;
+  margin: 20px 0;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
+p {
+  text-indent: 1cm;
+  padding: 5px 25px;
+  text-align: justify;
+}
+
+body {
+  /* v v v uncomment for a surprise v v v */
+  /* background: url("https://i.kym-cdn.com/entries/icons/mobile/000/030/711/Robert_Downey_Jr_and_Chris_Hemsworth_scream_0-1_screenshot.jpg"); */
+  background-color: seashell;
+}
+
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td,
+th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 2px;
+}
+
+.center {
+  width: 60%;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.title {
+  text-anchor: middle;
+  font-size: large;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.label {
+  font-style: italic;
+}
+
+g.legends rect {
+  background-color: #fff;
+}
+
+g.yAxis line {
+  stroke-dasharray: 1 1;
+}
+
+a:link,
+a:visited {
+  background-color: #f44336;
+  color: white;
+  padding: 14px 25px;
+  margin: 10px 10px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+a:hover,
+a:active {
+  background-color: #d13a2f;
+  box-shadow: 0 0 10px red;
+}
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  text-align: center;
+  background-color: red;
+  width: 100%;
+  padding-bottom: 75%; /* aspect ratio */
+  vertical-align: top;
+  overflow: scroll;
+}
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
+}
+
+/* CUSTOM STYLINGS */
+
+#lineChartTitle1 {
+  font-family: Verdana;
+  font-size: 14px;
+  font-weight: bold;
+  text-anchor: middle;
+}
+
+#lineChartTitle2 {
+  font-family: Verdana;
+  font-size: 72px;
+  fill: grey;
+  text-anchor: middle;
+  font-weight: bold;
+}
+
+.slice {
+  font-size: 12pt;
+  font-family: Verdana;
+  fill: white;
+  font-weight: bold;
+}
+
+/*for line chart*/
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.dot {
+  stroke-width: 1.5px;
+}
+
+.axis text {
+  font-family: Verdana;
+  font-size: 11px;
+}
+
+.title {
+  font-family: Verdana;
+  font-size: 15px;
+}
+
+.xAxis {
+  font-family: verdana;
+  font-size: 11px;
+  fill: black;
+}
+
+.yAxis {
+  font-family: verdana;
+  font-size: 11px;
+  fill: white;
+}

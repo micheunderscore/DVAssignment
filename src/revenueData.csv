@@ -1,0 +1,41 @@
+group,category,income,year,performance
+All,Trainings,63850.4963,2008,289309
+All,Consultancy,78258.0845,2009,234998
+All,Grants,60610.2355,2010,310900
+All,Joint Venture,30493.1686,2011,223900
+All,Merchandise,56097.0151,2012,234500
+Samad,Trainings,19441.5648,2008,81006.52
+Samad,Consultancy,25922.0864,2009,70499.4
+Samad,Grants,9720.7824,2010,96379
+Samad,Joint Venture,6480.5216,2011,64931
+Samad,Merchandise,19441.5648,2012,70350
+Phang,Trainings,22913.2728,2008,63647.98
+Phang,Consultancy,7637.7576,2009,61099.48
+Phang,Grants,23549.7526,2010,87052
+Phang,Joint Venture,1909.4394,2011,58214
+Phang,Merchandise,7637.7576,2012,58625
+Johan,Trainings,1041.5124,2008,23144.72
+Johan,Consultancy,2430.1956,2009,14099.88
+Johan,Grants,15275.5152,2010,15545
+Johan,Joint Venture,4166.0496,2011,11195
+Johan,Merchandise,11803.8072,2012,11725
+Rita,Trainings,7406.3104,2008,34717.08
+Rita,Consultancy,2545.9192,2009,30549.74
+Rita,Grants,1620.1304,2010,34199
+Rita,Joint Venture,8563.5464,2011,33585
+Rita,Merchandise,3008.8136,2012,35175
+Lenny,Trainings,7637.7576,2008,69434.16
+Lenny,Consultancy,35411.4216,2009,46999.6
+Lenny,Grants,8332.0992,2010,62180
+Lenny,Joint Venture,6249.0744,2011,40302
+Lenny,Merchandise,11803.8072,2012,42210
+Pian,Trainings,3182.399,2008,7232.725
+Pian,Consultancy,867.927,2009,4699.96
+Pian,Grants,1808.18125,2010,6218
+Pian,Joint Venture,795.59975,2011,8956
+Pian,Merchandise,578.618,2012,9380
+Siti,Trainings,2227.6793,2008,10125.815
+Siti,Consultancy,3442.7771,2009,7049.94
+Siti,Grants,303.77445,2010,9327
+Siti,Joint Venture,2328.93745,2011,6717
+Siti,Merchandise,1822.6467,2012,7035

@@ -1,141 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <title>Data Visualization</title>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Data Visualization Lab</title>
-
-    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
-    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
-    <py-env>
-      - paths:
-        - dataset.csv
-      - pandas
-      - plotly
-    </py-env>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    
-    <style>
-      p {
-        font-family: arial;
-        text-align: justify;
-        margin: 10px;
-      }
-    </style>
+    <eta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../src/styles/styles.css" />
+    <title>Document</title>
   </head>
-
-  <script type="text/javascript">
-    function plot(graph, chart, staticPlot) {
-      var figure = JSON.parse(graph);
-      Plotly.newPlot(chart, figure, {}, { staticPlot });
-    }
-  </script>
-
   <body>
-    <center>
-      <h1>Data Visualization - Lab 4</h1>
-      <h2><pre>Name: Muhammad Iqbal bin Asim</pre></h2>
-      <h2><pre>ID: 18001179</pre></h2>
-
-      <div style="width: 80%">
-        <div id="choropleth"></div>
-        <p>
-          This graph portrays the number of total covid cases for each country through a
-          choropleth using dark red for the maximum number of total covid cases and
-          white for the minimum. As can be seen in the chart, the United States of
-          America holds the global record for most number of total covid cases and covid
-          related deaths to date. This achievement is followed second by India and then
-          Brazil. We can also notice that the African region overall holds low numbers
-          of total covid cases and deaths throughout. Despite sharing the longest border
-          with Canada, the neighbouring country pales in regards to total covid cases
-          compared to the land of the free. By zooming into the choropleth, specific
-          details of smaller nations can be detailed such as the Southeast Asean nation
-          of Vanuatu has had 11,477k total covid cases and 14 total covid-related
-          deaths.
-        </p>        
+    <div class="center">
+      <div class="textbox">
+        <h2>Group Submission</h2>
+        <table>
+          <tr>
+            <th>Member Name</th>
+            <th>Matrix ID</th>
+          </tr>
+          <tr>
+            <td>Muhammad Iqbal bin Asim</td>
+            <td>18001179</td>
+          </tr>
+          <tr>
+            <td>Nor Intan Liyana Binti Ibrahim</td>
+            <td>17009052</td>
+          </tr>
+          <tr>
+            <td>Muhammad Akhimullah bin Saiful Bahri</td>
+            <td>19000657</td>
+          </tr>
+          <tr>
+            <td>Muhammad Faris Bin Ramlee</td>
+            <td>18001053</td>
+          </tr>
+          <tr>
+            <td>Muhammad Hakim Irfan bin Mohd Zaini</td>
+            <td>18001134</td>
+          </tr>
+        </table>
       </div>
 
-      <py-script>
-        # Author        : Muhammad Iqbal bin Asim
-        # GH            : /micheunderscore
-        
-        # Js to python bridge imports
-        import json
-        import js
+      <div class="textbox">
+        <div id="pieChart"></div>
+        <div id="barChart"></div>
+        <div id="lineChart"></div>
+      </div>
+    </div>
 
-        # Python library imports
-        import pandas as pd
-        import plotly
-        import plotly.express as px
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+    <script src="./src/js/main.js"></script>
+    
+    <!-- INTAN WORKSPACE -->
+    <script src="./src/js/intan.js"></script>
 
-        # Load Data
-        df = pd.read_csv("./dataset.csv")
-        # Cull unused columns
-        df = df[["Name", "ISO", "Cases - cumulative total", "Deaths - cumulative total"]]
-
-        # Plot title customization
-        plotTitle = {
-            "text": "<i><b>Global Confirmed Covid Cases</b></i>",
-            "y": 0.95,
-            "x": 0.5,
-            "xanchor": "center",
-            "yanchor": "top"
-        }
-
-        # Focal column
-        col = "Cases - cumulative total"
-
-        # Maximum and minimum boundaries for chart scale
-        AMin = df[col].quantile([0.25])[0.25] # First Quantile as minimum because actual minimum is literally too low (54)
-        AMax = df[col].idxmax()
-
-        # Choropleth chart of covid cases worldwide
-        figA = px.choropleth(
-                df, locations="ISO", hover_name="Name", color=col, 
-                color_continuous_scale=px.colors.sequential.Reds,
-                range_color=(AMin, AMax), 
-                hover_data=[col, "Deaths - cumulative total"],
-                labels={col: "Cases", "Deaths - cumulative total": "Deaths"}
-                )
-
-        # Geo scatter plot for covid deaths
-        figB = px.scatter_geo(
-                    df, locations="ISO", size="Deaths - cumulative total"
-                ).update_traces(hovertemplate=None, hoverinfo="skip")
-
-        # Combine both figures
-        figA.add_trace(figB.data[0])
-
-        # Customize map
-        figA.update_geos(
-            projection_type="natural earth",
-            showocean=True, oceancolor="LightBlue",
-            showlakes=True, lakecolor="LightBlue",
-        )
-
-        # Update plot layout
-        figA.update_layout(
-                title=plotTitle,
-                coloraxis_colorbar_x=0.8,
-                coloraxis_colorbar_y=0.55,
-                modebar={
-                    "orientation":"v"
-                },
-                margin={"r":0,"t":50,"l":0,"b":50}, 
-                annotations = [dict(
-                    x=1.05,
-                    y=-0.15,
-                    xref='paper',
-                    yref='paper',
-                    text='Source: <a href="https://covid19.who.int/data">\
-                        World Health Organization Coronavirus (COVID-19) Dashboard Data</a>',
-                    showarrow = False
-                )]
-            )
-        
-        graphJSON = json.dumps(figA, cls=plotly.utils.PlotlyJSONEncoder)
-        js.plot(graphJSON, "choropleth", True)
-      </py-script>
-    </center>
+    <!-- AKHI WORKSPACE -->
+    <script src="./src/js/akhi.js"></script>
   </body>
 </html>
