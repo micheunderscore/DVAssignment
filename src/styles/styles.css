@@ -17,7 +17,7 @@ p {
 body {
   /* v v v uncomment for a surprise v v v */
   /* background: url("https://i.kym-cdn.com/entries/icons/mobile/000/030/711/Robert_Downey_Jr_and_Chris_Hemsworth_scream_0-1_screenshot.jpg"); */
-  background-color: seashell;
+  background-color: black;
 }
 
 table {
@@ -44,17 +44,26 @@ tr:nth-child(even) {
 }
 
 .center {
-  width: 60%;
+  width: 80%;
   text-align: center;
   margin-left: auto;
   margin-right: auto;
 }
 
 .title {
+  font-family: Verdana;
   text-anchor: middle;
   font-size: large;
   font-weight: bold;
   font-style: italic;
+}
+
+.subtitle {
+  font-family: Verdana;
+  text-anchor: middle;
+  font-size: medium;
+  font-style: italic;
+  fill: lightslategrey;
 }
 
 .label {
@@ -106,9 +115,14 @@ a:active {
 
 /* CUSTOM STYLINGS */
 
+#groupText {
+  opacity: 0;
+  position: absolute;
+}
+
 #lineChartTitle1 {
   font-family: Verdana;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: bold;
   text-anchor: middle;
 }
@@ -116,9 +130,9 @@ a:active {
 #lineChartTitle2 {
   font-family: Verdana;
   font-size: 72px;
-  fill: grey;
   text-anchor: middle;
   font-weight: bold;
+  opacity: 0.8;
 }
 
 .slice {
@@ -138,8 +152,9 @@ a:active {
 
 .line {
   fill: none;
-  stroke: steelblue;
-  stroke-width: 3px;
+  stroke-opacity: 1;
+  stroke-width: 2px;
+  stroke: ligtrr;
 }
 
 .dot {
@@ -149,11 +164,6 @@ a:active {
 .axis text {
   font-family: Verdana;
   font-size: 11px;
-}
-
-.title {
-  font-family: Verdana;
-  font-size: 15px;
 }
 
 .xAxis {

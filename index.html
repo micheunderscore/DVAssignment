@@ -11,6 +11,12 @@
   <body>
     <div class="center">
       <div class="textbox">
+        <input placeholder="Enter some text" id="groupText"/>
+        <div id="pieChart"></div>
+        <div id="barChart"></div>
+        <div id="lineChart"></div>
+      </div>
+      <div class="textbox">
         <h2>Group Submission</h2>
         <table>
           <tr>
@@ -39,23 +45,17 @@
           </tr>
         </table>
       </div>
-
-      <div class="textbox">
-        <div id="pieChart"></div>
-        <div id="barChart"></div>
-        <div id="lineChart"></div>
-      </div>
     </div>
 
     <!-- Load d3.js -->
-    <script src="https://d3js.org/d3.v2.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
-    <script src="./src/js/main.js"></script>
+    <script type="module" src="./src/js/main.js"></script>
     
     <!-- INTAN WORKSPACE -->
-    <script src="./src/js/intan.js"></script>
+    <script type="module" src="./src/js/intan.js"></script>
 
     <!-- AKHI WORKSPACE -->
-    <script src="./src/js/akhi.js"></script>
+    <script type="module" src="./src/js/akhi.js"></script>
   </body>
 </html>
