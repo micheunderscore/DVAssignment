@@ -1,11 +1,12 @@
 h1,
 .textbox,
 .whitebox {
-  background-color: #fff;
+  background-color: white;
   margin: 20px 0;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+  font-family: Verdana;
 }
 
 p {
@@ -16,8 +17,12 @@ p {
 
 body {
   /* v v v uncomment for a surprise v v v */
-  /* background: url("https://i.kym-cdn.com/entries/icons/mobile/000/030/711/Robert_Downey_Jr_and_Chris_Hemsworth_scream_0-1_screenshot.jpg"); */
-  background-color: black;
+  /* background: url("https://m.media-amazon.com/images/I/81r5u1n2paL._AC_SL1500_.jpg"); */
+  background-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1),
+    rgba(255, 0, 0, 1)
+  );
 }
 
 table {
@@ -41,6 +46,7 @@ tr:nth-child(even) {
   fill: none;
   stroke: steelblue;
   stroke-width: 2px;
+  stroke-linecap: round;
 }
 
 .center {
@@ -154,7 +160,7 @@ a:active {
   fill: none;
   stroke-opacity: 1;
   stroke-width: 2px;
-  stroke: ligtrr;
+  stroke: lightblue;
 }
 
 .dot {

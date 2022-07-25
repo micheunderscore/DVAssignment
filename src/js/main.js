@@ -41,6 +41,8 @@ for (var i = 0; i < 10; i++) {
 }
 
 var group = "All";
+var cutoff = 30;
+var blur = 0.5;
 
 d3.csv("./src/data/drivers.csv", (driverLookup) => {
   d3.csv("./src/data/results.csv", function (dataset) {
@@ -53,7 +55,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
     groupedData = groupedData.filter((d) => d.value > 0); // Only get drivers who have points
     groupedData = groupedData
       .sort((a, b) => d3.descending(a.value, b.value))
-      .slice(0, 30); // Get top 30 drivers
+      .slice(0, cutoff); // Get top 30 drivers
 
     function dsPieChart(data) {
       var width = 450,
@@ -77,8 +79,11 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
       function mousemove(d) {
         var driver = driverLookup[d.data.value.key - 1];
         Tooltip.html(
-          `${d.value}pts - ${driver.forename} ${driver.surname} (${driver.code})`
+          `#${d.index + 1} - (${d.value}pts) ${driver.forename} ${
+            driver.surname
+          } [${driver.code}]`
         )
+          .style("font-family", "Verdana")
           .style("border-color", colorPalette[d.data.value.key - 1])
           .style("left", d3.event.pageX + 10 + "px")
           .style("top", d3.event.pageY + 10 + "px");
@@ -88,30 +93,55 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         Tooltip.style("opacity", 0);
         d3.select(this)
           .transition()
-          .duration(500)
-          .style("opacity", 0.5)
-          .style("stroke-width", "0px");
+          .duration(250)
+          .style("opacity", (data) => (group == data.data.value.key ? 1 : blur))
+          .style("stroke-width", (data) =>
+            group == data.data.value.key ? "5px" : "0px"
+          );
       }
 
       function mouseover(d) {
         Tooltip.style("opacity", 1);
         d3.select(this)
           .transition()
-          .duration(500)
+          .duration(100)
           .style("opacity", 1)
           .style("stroke", "white")
-          .style("stroke-width", "15px");
+          .style("stroke-width", "10px");
       }
 
       function up(d) {
+        var currDriver = driverLookup[d.data.value.key - 1];
         // updateBarChart(d.data.category, color(i));
         updateLineChart(d.data.value.key, colorPalette[d.data.value.key - 1]);
+        d3.selectAll("allSlices.path").style("opacity", blur);
+        d3.selectAll("#selectedDriver")
+          .text(
+            `#${d.index + 1} - ${currDriver.forename} ${currDriver.surname}`
+          )
+          .style("fill", colorPalette[d.data.value.key - 1]);
         group = d.data.value.key;
-
-        d3.selectAll("allSlices").style("opacity", (data) =>
-          group == data.data.value.key ? 1 : 0.5
-        );
+        resetSlices();
       }
+
+      function resetSlices() {
+        d3.selectAll(".uhSlice")
+          .transition()
+          .duration(50)
+          .style("opacity", (data) => (group == data.data.value.key ? 1 : blur))
+          .style("stroke-width", (data) =>
+            group == data.data.value.key ? "10px" : "0px"
+          );
+      }
+
+      var resetGroups = function () {
+        group = "All";
+        resetSlices();
+        updateLineChart(group, "lightcoral");
+        d3.selectAll("#selectedDriver")
+          .text("Overall Drivers")
+          .style("fill", "lightslategray");
+      };
 
       var svg = d3
         .select("#pieChart")
@@ -136,9 +166,12 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         .data(pie)
         .enter()
         .append("path")
+        .attr("class", "uhSlice")
         .attr("d", arc)
         .attr("fill", (d) => colorPalette[d.data.value.key - 1])
-        .style("opacity", 0.6)
+        .style("opacity", blur)
+        .style("stroke", "white")
+        .style("stroke-width", "0px")
         .on("mouseover", mouseover)
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave)
@@ -148,13 +181,14 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
       svg
         .append("text")
         .attr("text-anchor", "middle")
-        .attr("y", -20)
-        .text("Top 20")
+        .attr("y", -40)
+        .text("Top " + cutoff)
         .attr("class", "title");
 
       // Pie chart title
       svg
         .append("text")
+        .attr("y", -20)
         .attr("text-anchor", "middle")
         .text("Formula One Drivers")
         .attr("class", "title");
@@ -163,9 +197,36 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
       svg
         .append("text")
         .attr("text-anchor", "middle")
-        .attr("y", 20)
         .text("(by total career points)")
         .attr("class", "subtitle");
+
+      // Pie chart title
+      svg
+        .append("text")
+        .attr("id", "selectedDriver")
+        .attr("text-anchor", "middle")
+        .attr("y", 40)
+        .text("Overall Drivers")
+        .attr("class", "subtitle")
+        .style("font-weight", "bold");
+
+      // Pie chart title
+      svg
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", 60)
+        .text("RESET GROUPS")
+        .attr("class", "subtitle")
+        .style("fill", "lightgrey")
+        .on("mouseover", function () {
+          d3.select(this).transition().duration(250).style("fill", "black");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).transition().duration(250).style("fill", "lightgrey");
+        })
+        .on("click", resetGroups);
+
+      svg.append("button");
     }
 
     dsPieChart(groupedData);

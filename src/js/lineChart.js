@@ -42,9 +42,11 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
     function dsLineChart(usedGroup, usedColor) {
       let groupedData = datasetLineChartChosen(usedGroup);
 
-      var margin = { top: 50, right: 0, bottom: 50, left: 0 },
-        width = 800 - margin.left - margin.right,
-        height = 200 - margin.top - margin.bottom;
+      var margin = { top: 100, right: 0, bottom: 50, left: 0 },
+        width = window.innerWidth - 500,
+        height = 200;
+
+      console.log();
 
       var x = d3
         .scaleLinear()
@@ -70,8 +72,61 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
 
       var plot = svg
         .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .attr(
+          "transform",
+          "translate(" + margin.left + "," + (margin.top + height) / 3 + ")"
+        )
         .attr("id", "lineChartPlot");
+
+      // Create the circle that travels along the curve of chart
+      var focus = svg
+        .append("g")
+        .append("circle")
+        .style("fill", "none")
+        .attr("stroke", "black")
+        .attr("r", 5)
+        .style("opacity", 0);
+
+      // Create the text that travels along the curve of chart
+      var focusText = svg
+        .append("text")
+        .attr("x", margin.left + width - 200)
+        .attr("y", margin.top + height)
+        .style("opacity", 0)
+        .attr("text-anchor", "right")
+        .attr("alignment-baseline", "middle");
+
+      // Create a rect on top of the svg area: this rectangle recovers mouse position
+      svg
+        .append("rect")
+        .attr("y", margin.top)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .attr("width", width)
+        .attr("height", height)
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseout", mouseout);
+
+      // What happens when the mouse move -> show the annotations at the right positions.
+      function mouseover() {
+        focus.style("opacity", 1);
+        focusText.style("opacity", 1);
+      }
+
+      function mousemove() {
+        var x0 = x.invert(d3.mouse(this)[0]);
+        var i = Math.floor(x0);
+        var selectedData = groupedData[i];
+        focus.attr("cx", x(i)).attr("cy", y(selectedData.value) + margin.top);
+        focusText.text(
+          "Race #" + i + "  -  " + "Position: " + Math.floor(selectedData.value)
+        );
+      }
+      function mouseout() {
+        focus.style("opacity", 0);
+        focusText.style("opacity", 0);
+      }
 
       plot
         .append("path")
@@ -93,15 +148,15 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
             : "white"
         )
         .attr("opacity", (d) =>
-          d.value == d3.min(groupedData, (d) => d.value) ||
-          d.value == d3.max(groupedData, (d) => d.value)
+          (d.value == d3.min(groupedData, (d) => d.value) ||
+            d.value == d3.max(groupedData, (d) => d.value)) &&
+          usedGroup != "All"
             ? 1
             : 0
         )
         .attr("cx", line.x())
         .attr("cy", line.y())
-        .attr("r", 3.5)
-        .attr("stroke", "lightgrey");
+        .attr("r", 3.5);
 
       svg
         .append("text")
@@ -121,7 +176,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
 
       plot
         .append("text")
-        .text(d3.mean(groupedData, (d) => d.value).toFixed(0))
+        .text(Math.floor(d3.mean(groupedData, (d) => d.value)))
         .attr("id", "lineChartTitle2")
         .attr("x", width / 2)
         .attr("y", height / 2);
@@ -134,7 +189,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         .style("fill", "green");
       svg
         .append("circle")
-        .attr("cx", margin.left + 180)
+        .attr("cx", margin.left + 200)
         .attr("cy", margin.top + height)
         .attr("r", 6)
         .style("fill", "red");
@@ -143,20 +198,20 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         .attr("x", margin.left + 20)
         .attr("y", margin.top + height)
         .text(
-          `Best Grid Position #${d3
-            .min(groupedData, (d) => d.value)
-            .toFixed(0)}`
+          `Best Grid Position #${Math.floor(
+            d3.min(groupedData, (d) => d.value)
+          )}`
         )
         .style("font-size", "15px")
         .attr("alignment-baseline", "middle");
       svg
         .append("text")
-        .attr("x", margin.left + 190)
+        .attr("x", margin.left + 210)
         .attr("y", margin.top + height)
         .text(
-          `Worst Grid Position #${d3
-            .max(groupedData, (d) => d.value)
-            .toFixed(0)}`
+          `Worst Grid Position #${Math.floor(
+            d3.max(groupedData, (d) => d.value)
+          )}`
         )
         .style("font-size", "15px")
         .attr("alignment-baseline", "middle");
@@ -168,6 +223,6 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
       dsLineChart(usedGroup, colorChosen);
     };
 
-    updateLineChart(group, "lightred");
+    updateLineChart(group, "lightcoral");
   });
 });
