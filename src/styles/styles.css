@@ -1,4 +1,3 @@
-h1,
 .textbox,
 .whitebox {
   background-color: white;
@@ -6,13 +5,21 @@ h1,
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-  font-family: Verdana;
 }
 
-p {
+.paragraph {
   text-indent: 1cm;
   padding: 5px 25px;
   text-align: justify;
+}
+
+.reference {
+  font-size: small;
+  font-style: italic;
+}
+
+html {
+  font-family: Verdana;
 }
 
 body {
@@ -59,9 +66,7 @@ tr:nth-child(even) {
 .title {
   font-family: Verdana;
   text-anchor: middle;
-  font-size: large;
   font-weight: bold;
-  font-style: italic;
 }
 
 .subtitle {

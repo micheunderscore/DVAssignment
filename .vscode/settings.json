@@ -1,8 +1,5 @@
 {
   "cSpell.words": ["plotly", "xanchor", "yanchor"],
   "editor.formatOnSave": true,
-  "[html]": {
-    "editor.formatOnSave": false
-  },
   "js/ts.implicitProjectConfig.checkJs": false
 }
