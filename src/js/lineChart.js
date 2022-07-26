@@ -169,7 +169,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
                 }'s`
           } Career Average Grid Position`
         )
-        .attr("id", "lineChartTitle1")
+        .attr("id", "chartTitle1")
         .attr("class", "titleText")
         .attr("x", (margin.left + width + margin.right) / 2)
         .attr("y", margin.top / 2);
@@ -177,7 +177,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
       plot
         .append("text")
         .text(Math.floor(d3.mean(groupedData, (d) => d.value)))
-        .attr("id", "lineChartTitle2")
+        .attr("id", "chartTitle2")
         .attr("x", width / 2)
         .attr("y", height / 2);
 

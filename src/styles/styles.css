@@ -126,14 +126,14 @@ a:active {
   position: absolute;
 }
 
-#lineChartTitle1 {
+#chartTitle1 {
   font-family: Verdana;
   font-size: 20px;
   font-weight: bold;
   text-anchor: middle;
 }
 
-#lineChartTitle2 {
+#chartTitle2 {
   font-family: Verdana;
   font-size: 72px;
   text-anchor: middle;
