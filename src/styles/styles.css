@@ -1,23 +1,35 @@
-h1,
 .textbox,
 .whitebox {
-  background-color: #fff;
+  background-color: white;
   margin: 20px 0;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
-p {
+.paragraph {
   text-indent: 1cm;
   padding: 5px 25px;
   text-align: justify;
 }
 
+.reference {
+  font-size: small;
+  font-style: italic;
+}
+
+html {
+  font-family: Verdana;
+}
+
 body {
   /* v v v uncomment for a surprise v v v */
-  /* background: url("https://i.kym-cdn.com/entries/icons/mobile/000/030/711/Robert_Downey_Jr_and_Chris_Hemsworth_scream_0-1_screenshot.jpg"); */
-  background-color: seashell;
+  /* background: url("https://m.media-amazon.com/images/I/81r5u1n2paL._AC_SL1500_.jpg"); */
+  background-image: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 1),
+    rgba(255, 0, 0, 1)
+  );
 }
 
 table {
@@ -41,20 +53,28 @@ tr:nth-child(even) {
   fill: none;
   stroke: steelblue;
   stroke-width: 2px;
+  stroke-linecap: round;
 }
 
 .center {
-  width: 60%;
+  width: 80%;
   text-align: center;
   margin-left: auto;
   margin-right: auto;
 }
 
 .title {
+  font-family: Verdana;
   text-anchor: middle;
-  font-size: large;
   font-weight: bold;
+}
+
+.subtitle {
+  font-family: Verdana;
+  text-anchor: middle;
+  font-size: medium;
   font-style: italic;
+  fill: lightslategrey;
 }
 
 .label {
@@ -106,19 +126,24 @@ a:active {
 
 /* CUSTOM STYLINGS */
 
-#lineChartTitle1 {
+#groupText {
+  opacity: 0;
+  position: absolute;
+}
+
+#chartTitle1 {
   font-family: Verdana;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: bold;
   text-anchor: middle;
 }
 
-#lineChartTitle2 {
+#chartTitle2 {
   font-family: Verdana;
   font-size: 72px;
-  fill: grey;
   text-anchor: middle;
   font-weight: bold;
+  opacity: 0.8;
 }
 
 .slice {
@@ -138,8 +163,9 @@ a:active {
 
 .line {
   fill: none;
-  stroke: steelblue;
-  stroke-width: 3px;
+  stroke-opacity: 1;
+  stroke-width: 2px;
+  stroke: lightblue;
 }
 
 .dot {
@@ -149,11 +175,6 @@ a:active {
 .axis text {
   font-family: Verdana;
   font-size: 11px;
-}
-
-.title {
-  font-family: Verdana;
-  font-size: 15px;
 }
 
 .xAxis {

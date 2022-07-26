@@ -1,205 +1,133 @@
-d3.csv("./src/revenueData.csv", function (datasetBarChart) {
-  function datasetBarChosen(group) {
-    var ds = [];
-    for (x in datasetBarChart) {
-      if (datasetBarChart[x].group == group) {
-        ds.push(datasetBarChart[x]);
+var margin = { top: 30, right: 30, bottom: 30, left: 60 },
+  width = window.innerWidth - margin.left - margin.right - 500,
+  height = 400 - margin.top - margin.bottom;
+
+//Step 4: Parse the data from local machine
+d3.csv("./src/data/drivers.csv", function (driverLookup) {
+  d3.csv("./src/data/results.csv", function (resultsLookup) {
+    d3.csv("./src/data/races.csv", function (dataset) {
+      function datasetChartChosen(usedGroup) {
+        let outData = {};
+
+        console.log(dataset);
+
+        switch (usedGroup) {
+          case "All":
+            outData = d3
+              .nest()
+              .key((d) => d.driverId)
+              .rollup((leaves) => d3.mean(leaves, (d) => d.positionOrder))
+              .entries(dataset);
+            break;
+          default:
+            let temp = d3
+              .nest()
+              .key((d) => d.driverId)
+              .entries(dataset)
+              .filter((d) => {
+                return (
+                  d.key == usedGroup &&
+                  d.values.some(
+                    (d) =>
+                      d.positionOrder != undefined &&
+                      !Number.isNaN(d.positionOrder)
+                  )
+                );
+              })[0].values;
+            outData = d3
+              .nest()
+              .key((d) => d.resultId)
+              .rollup((leaves) => d3.sum(leaves, (d) => d.positionOrder))
+              .entries(temp);
+            break;
+        }
+
+        return outData;
       }
-    }
-    return ds;
-  }
 
-  function dsBarChartBasics() {
-    var margin = { top: 30, right: 5, bottom: 20, left: 50 },
-      width = 500 - margin.left - margin.right,
-      height = 250 - margin.top - margin.bottom,
-      colorBar = d3.scale.category20(),
-      barPadding = 1;
-    return {
-      margin: margin,
-      width: width,
-      height: height,
-      colorBar: colorBar,
-      barPadding: barPadding,
-    };
-  }
+      function dsBarChart(usedGroup, colorChosen) {
+        var groupedData = dataset;
 
-  function dsBarChart() {
-    var firstDatasetBarChart = datasetBarChosen(group);
+        //Step 3: Drawing graph with SVG
+        var svg = d3
+          .select("#barChart")
+          .append("svg")
+          .attr("id", "thisBarChart")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")"
+          );
 
-    var { margin, width, height, barPadding } = dsBarChartBasics();
+        //Step 5: Add X axis
+        var x = d3
+          .scaleBand()
+          .range([0, width])
+          .domain(groupedData.map((d) => d.year))
+          .padding(0.2);
 
-    var xScale = d3.scale
-      .linear()
-      .domain([0, firstDatasetBarChart.length])
-      .range([0, width]);
+        svg
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          .selectAll("text")
+          .attr("transform", "translate(-10,0)rotate(-45)")
+          .style("text-anchor", "end");
 
-    var yScale = d3.scale
-      .linear()
-      .domain([
-        0,
-        d3.max(firstDatasetBarChart, function (d) {
-          return d.income;
-        }),
-      ])
-      .range([height, 0]);
+        //Step 6: Add Y axis
+        var y = d3.scaleLinear().domain([0, 30]).range([height, 0]);
+        svg.append("g").call(d3.axisLeft(y));
 
-    //Create SVG element
+        //Step 7: Add bars and close the scripts
+        svg
+          .selectAll("mybar")
+          .data(groupedData)
+          .enter()
+          .append("rect")
+          .attr("x", (d) => x(d.year))
+          .attr("y", (d) => y(d.round))
+          .attr("width", x.bandwidth())
+          .attr("height", (d) => height - y(d.round))
+          .attr("fill", " #0D1D74");
 
-    var svg = d3
-      .select("#barChart")
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .attr("id", "barChartPlot");
+        //Labelling Main Title
+        var title = svg
+          .append("text")
+          .text("Rounds of races based on year")
+          .attr("id", "chartTitle1")
+          .attr("class", "titleText")
+          .attr("text-anchor", "middle")
+          .attr("dy", margin.top / 2)
+          .attr("dx", width / 2);
 
-    var plot = svg
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        //labeling x axis
+        svg
+          .append("text")
+          .attr("x", width / 1)
+          .attr("y", height + 30)
+          .attr("text-anchor", "middle")
+          .style("font-family ", "Verdana")
+          .style("font-size", 12)
+          .text("Year");
 
-    plot
-      .selectAll("rect")
-      .data(firstDatasetBarChart)
-      .enter()
-      .append("rect")
-      .attr("x", function (d, i) {
-        return xScale(i);
-      })
-      .attr("width", width / firstDatasetBarChart.length - barPadding)
-      .attr("y", function (d) {
-        return yScale(d.income);
-      })
-      .attr("height", function (d) {
-        return height - yScale(d.income);
-      })
-      .attr("fill", "steelblue");
+        //labeling y axis
+        svg
+          .append("text")
+          .attr("text-anchor", "middle")
+          .attr("transform", "translate(-30," + height / 2 + " )rotate(-90)")
+          .style("font-family ", "Verdana")
+          .style("font-size", 12)
+          .text("Rounds of races");
+      }
 
-    // Add y labels to plot
+      window.updateBarChart = function (usedGroup, colorChosen) {
+        d3.selectAll("#thisBarChart").remove();
+        dsBarChart(usedGroup, colorChosen);
+      };
 
-    plot
-      .selectAll("text")
-      .data(firstDatasetBarChart)
-      .enter()
-      .append("text")
-      .text(function (d) {
-        return formatAsInteger(d3.round(d.income));
-      })
-      .attr("text-anchor", "middle")
-      .attr("x", function (d, i) {
-        return (
-          i * (width / firstDatasetBarChart.length) +
-          (width / firstDatasetBarChart.length - barPadding) / 2
-        );
-      })
-      .attr("y", function (d) {
-        return yScale(d.income) + 14;
-      })
-      .attr("class", "yAxis");
-
-    var xLabels = svg
-      .append("g")
-      .attr(
-        "transform",
-        "translate(" + margin.left + "," + (margin.top + height) + ")"
-      );
-
-    xLabels
-      .selectAll("text.xAxis")
-      .data(firstDatasetBarChart)
-      .enter()
-      .append("text")
-      .text(function (d) {
-        return d.category;
-      })
-      .attr("text-anchor", "middle")
-      .attr("x", function (d, i) {
-        return (
-          i * (width / firstDatasetBarChart.length) +
-          (width / firstDatasetBarChart.length - barPadding) / 2
-        );
-      })
-      .attr("y", 15)
-      .attr("class", "xAxis");
-
-    // Title
-
-    svg
-      .append("text")
-      .attr("x", (width + margin.left + margin.right) / 2)
-      .attr("y", 15)
-      .attr("class", "title")
-      .attr("text-anchor", "middle")
-      .text("Overall Income Breakdown 2022");
-  }
-
-  dsBarChart();
-
-  window.updateBarChart = function (group, colorChosen) {
-    var currentDatasetBarChart = datasetBarChosen(group);
-
-    var { margin, width, height, barPadding } = dsBarChartBasics();
-
-    var xScale = d3.scale
-      .linear()
-      .domain([0, currentDatasetBarChart.length])
-      .range([0, width]);
-
-    var yScale = d3.scale
-      .linear()
-      .domain([
-        0,
-        d3.max(currentDatasetBarChart, function (d) {
-          return d.income * 1;
-        }),
-      ])
-      .range([height, 0]);
-    var svg = d3.select("#barChart svg");
-
-    var plot = d3.select("#barChartPlot").datum(currentDatasetBarChart);
-    /* Note that here we only have to select the elements - no more appending! */
-    plot
-      .selectAll("rect")
-      .data(currentDatasetBarChart)
-      .transition()
-      .duration(750)
-      .attr("x", function (d, i) {
-        return xScale(i);
-      })
-      .attr("width", width / currentDatasetBarChart.length - barPadding)
-      .attr("y", function (d) {
-        return yScale(d.income);
-      })
-      .attr("height", function (d) {
-        return height - yScale(d.income);
-      })
-      .attr("fill", colorChosen);
-
-    plot
-      .selectAll("text.yAxis")
-      .data(currentDatasetBarChart)
-      .transition()
-      .duration(750)
-      .attr("text-anchor", "middle")
-      .attr("x", function (d, i) {
-        return (
-          i * (width / currentDatasetBarChart.length) +
-          (width / currentDatasetBarChart.length - barPadding) / 2
-        );
-      })
-      .attr("y", function (d) {
-        return yScale(d.income) + 14;
-      })
-      .text(function (d) {
-        return formatAsInteger(d3.round(d.income));
-      })
-      .attr("class", "yAxis");
-
-    svg
-      .selectAll("text.title")
-      .attr("x", (width + margin.left + margin.right) / 2)
-      .attr("y", 15)
-      .attr("class", "title")
-      .attr("text-anchor", "middle")
-      .text(group + "'s Income Breakdown 2022");
-  };
+      updateBarChart("All", "lightcoral");
+    });
+  });
 });

@@ -1,237 +1,205 @@
-// LINE CHART ==============================================================================
+// d3.csv("./src/revenueData.csv", function (datasetBarChart) {
+//   function datasetBarChosen(group) {
+//     var ds = [];
+//     for (x in datasetBarChart) {
+//       if (datasetBarChart[x].group == group) {
+//         ds.push(datasetBarChart[x]);
+//       }
+//     }
+//     return ds;
+//   }
 
-d3.csv("./src/revenueData.csv", function (datasetLineChart) {
-  function datasetLineChartChosen(group) {
-    var ds = [];
-    for (x in datasetLineChart) {
-      if (datasetLineChart[x].group == group) {
-        ds.push(datasetLineChart[x]);
-      }
-    }
-    return ds;
-  }
+//   function dsBarChartBasics() {
+//     var margin = { top: 30, right: 5, bottom: 20, left: 50 },
+//       width = 500 - margin.left - margin.right,
+//       height = 250 - margin.top - margin.bottom,
+//       colorBar = d3.scale.category20(),
+//       barPadding = 1;
+//     return {
+//       margin: margin,
+//       width: width,
+//       height: height,
+//       colorBar: colorBar,
+//       barPadding: barPadding,
+//     };
+//   }
 
-  function dsLineChartBasics() {
-    var margin = { top: 20, right: 10, bottom: 0, left: 50 },
-      width = 500 - margin.left - margin.right,
-      height = 150 - margin.top - margin.bottom;
-    return {
-      margin: margin,
-      width: width,
-      height: height,
-    };
-  }
+//   function dsBarChart() {
+//     var firstDatasetBarChart = datasetBarChosen(group);
 
-  function dsLineChart() {
-    var firstDatasetLineChart = datasetLineChartChosen(group);
+//     var { margin, width, height, barPadding } = dsBarChartBasics();
 
-    var basics = dsLineChartBasics();
+//     var xScale = d3.scale
+//       .linear()
+//       .domain([0, firstDatasetBarChart.length])
+//       .range([0, width]);
 
-    var margin = basics.margin,
-      width = basics.width,
-      height = basics.height;
+//     var yScale = d3.scale
+//       .linear()
+//       .domain([
+//         0,
+//         d3.max(firstDatasetBarChart, function (d) {
+//           return d.income;
+//         }),
+//       ])
+//       .range([height, 0]);
 
-    var xScale = d3.scale
-      .linear()
-      .domain([0, firstDatasetLineChart.length - 1])
-      .range([0, width]);
+//     //Create SVG element
 
-    var yScale = d3.scale
-      .linear()
-      .domain([
-        0,
-        d3.max(firstDatasetLineChart, function (d) {
-          return d.performance;
-        }),
-      ])
-      .range([height, 0]);
+//     var svg = d3
+//       .select("#barChart")
+//       .append("svg")
+//       .attr("width", width + margin.left + margin.right)
+//       .attr("height", height + margin.top + margin.bottom)
+//       .attr("id", "barChartPlot");
 
-    var line = d3.svg
-      .line()
-      .x(function (d, i) {
-        return xScale(i);
-      })
-      .y(function (d) {
-        return yScale(d.performance);
-      });
+//     var plot = svg
+//       .append("g")
+//       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var svg = d3
-      .select("#lineChart")
-      .append("svg")
-      .datum(firstDatasetLineChart)
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom);
-    // create group and move it so that margins are respected (space for axis and title)
+//     plot
+//       .selectAll("rect")
+//       .data(firstDatasetBarChart)
+//       .enter()
+//       .append("rect")
+//       .attr("x", function (d, i) {
+//         return xScale(i);
+//       })
+//       .attr("width", width / firstDatasetBarChart.length - barPadding)
+//       .attr("y", function (d) {
+//         return yScale(d.income);
+//       })
+//       .attr("height", function (d) {
+//         return height - yScale(d.income);
+//       })
+//       .attr("fill", "steelblue");
 
-    svg
-      .append("circle")
-      .attr("cx", 10)
-      .attr("cy", 130)
-      .attr("r", 6)
-      .style("fill", "green");
-    svg
-      .append("circle")
-      .attr("cx", 160)
-      .attr("cy", 130)
-      .attr("r", 6)
-      .style("fill", "red");
-    svg
-      .append("text")
-      .attr("x", 20)
-      .attr("y", 130)
-      .text("Max Performance")
-      .style("font-size", "15px")
-      .attr("alignment-baseline", "middle");
-    svg
-      .append("text")
-      .attr("x", 170)
-      .attr("y", 130)
-      .text("Min Performance")
-      .style("font-size", "15px")
-      .attr("alignment-baseline", "middle");
-    var plot = svg
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-      .attr("id", "lineChartPlot");
-    /* descriptive titles as part of plot -- start */
-    var dsLength = firstDatasetLineChart.length;
+//     // Add y labels to plot
 
-    plot
-      .append("text")
-      .text(firstDatasetLineChart[dsLength - 1].performance)
-      .attr("id", "lineChartTitle2")
-      .attr("x", width / 2)
-      .attr("y", height / 2);
-    /* descriptive titles -- end */
+//     plot
+//       .selectAll("text")
+//       .data(firstDatasetBarChart)
+//       .enter()
+//       .append("text")
+//       .text(function (d) {
+//         return formatAsInteger(d3.round(d.income));
+//       })
+//       .attr("text-anchor", "middle")
+//       .attr("x", function (d, i) {
+//         return (
+//           i * (width / firstDatasetBarChart.length) +
+//           (width / firstDatasetBarChart.length - barPadding) / 2
+//         );
+//       })
+//       .attr("y", function (d) {
+//         return yScale(d.income) + 14;
+//       })
+//       .attr("class", "yAxis");
 
-    plot
-      .append("path")
-      .attr("class", "line")
-      .attr("d", line)
-      // add color
-      .attr("stroke", "lightgrey");
+//     var xLabels = svg
+//       .append("g")
+//       .attr(
+//         "transform",
+//         "translate(" + margin.left + "," + (margin.top + height) + ")"
+//       );
 
-    plot
-      .selectAll(".dot")
-      .data(firstDatasetLineChart)
-      .enter()
-      .append("circle")
-      .attr("class", "dot")
-      .attr("fill", function (d) {
-        return d.performance ==
-          d3.min(firstDatasetLineChart, function (d) {
-            return d.performance;
-          })
-          ? "red"
-          : d.performance ==
-            d3.max(firstDatasetLineChart, function (d) {
-              return d.performance;
-            })
-          ? "green"
-          : "white";
-      })
-      .attr("cx", line.x())
-      .attr("cy", line.y())
-      .attr("r", 3.5)
-      .attr("stroke", "lightgrey")
-      .append("title")
-      .text(function (d) {
-        return d.category + ": " + formatAsInteger(d.performance);
-      });
+//     xLabels
+//       .selectAll("text.xAxis")
+//       .data(firstDatasetBarChart)
+//       .enter()
+//       .append("text")
+//       .text(function (d) {
+//         return d.category;
+//       })
+//       .attr("text-anchor", "middle")
+//       .attr("x", function (d, i) {
+//         return (
+//           i * (width / firstDatasetBarChart.length) +
+//           (width / firstDatasetBarChart.length - barPadding) / 2
+//         );
+//       })
+//       .attr("y", 15)
+//       .attr("class", "xAxis");
 
-    svg
-      .append("text")
-      .text("Overall Performance 2022")
-      .attr("id", "lineChartTitle1")
-      .attr("class", "titleText")
-      .attr("x", margin.left + (width + margin.right) / 2)
-      .attr("y", 10);
-  }
+//     // Title
 
-  dsLineChart();
+//     svg
+//       .append("text")
+//       .attr("x", (width + margin.left + margin.right) / 2)
+//       .attr("y", 15)
+//       .attr("class", "title")
+//       .attr("text-anchor", "middle")
+//       .text("Overall Income Breakdown 2022");
+//   }
 
-  /* ** UPDATE CHART ** */
+//   dsBarChart();
 
-  /* updates bar chart on request */
-  window.updateLineChart = function (group, colorChosen) {
-    var currentDatasetLineChart = datasetLineChartChosen(group);
+//   window.updateBarChart = function (group, colorChosen) {
+//     var currentDatasetBarChart = datasetBarChosen(group);
 
-    var { margin, width, height } = dsLineChartBasics();
+//     var { margin, width, height, barPadding } = dsBarChartBasics();
 
-    var xScale = d3.scale
-      .linear()
-      .domain([0, currentDatasetLineChart.length - 1])
-      .range([0, width]);
+//     var xScale = d3.scale
+//       .linear()
+//       .domain([0, currentDatasetBarChart.length])
+//       .range([0, width]);
 
-    var yScale = d3.scale
-      .linear()
-      .domain([
-        0,
-        d3.max(currentDatasetLineChart, function (d) {
-          return d.performance;
-        }),
-      ])
-      .range([height, 0]);
+//     var yScale = d3.scale
+//       .linear()
+//       .domain([
+//         0,
+//         d3.max(currentDatasetBarChart, function (d) {
+//           return d.income * 1;
+//         }),
+//       ])
+//       .range([height, 0]);
+//     var svg = d3.select("#barChart svg");
 
-    var line = d3.svg
-      .line()
-      .x(function (d, i) {
-        return xScale(i);
-      })
-      .y(function (d) {
-        return yScale(d.performance);
-      });
+//     var plot = d3.select("#barChartPlot").datum(currentDatasetBarChart);
+//     /* Note that here we only have to select the elements - no more appending! */
+//     plot
+//       .selectAll("rect")
+//       .data(currentDatasetBarChart)
+//       .transition()
+//       .duration(750)
+//       .attr("x", function (d, i) {
+//         return xScale(i);
+//       })
+//       .attr("width", width / currentDatasetBarChart.length - barPadding)
+//       .attr("y", function (d) {
+//         return yScale(d.income);
+//       })
+//       .attr("height", function (d) {
+//         return height - yScale(d.income);
+//       })
+//       .attr("fill", colorChosen);
 
-    var svg = d3.select("#lineChart svg");
+//     plot
+//       .selectAll("text.yAxis")
+//       .data(currentDatasetBarChart)
+//       .transition()
+//       .duration(750)
+//       .attr("text-anchor", "middle")
+//       .attr("x", function (d, i) {
+//         return (
+//           i * (width / currentDatasetBarChart.length) +
+//           (width / currentDatasetBarChart.length - barPadding) / 2
+//         );
+//       })
+//       .attr("y", function (d) {
+//         return yScale(d.income) + 14;
+//       })
+//       .text(function (d) {
+//         return formatAsInteger(d3.round(d.income));
+//       })
+//       .attr("class", "yAxis");
 
-    var plot = d3.select("#lineChart").datum(currentDatasetLineChart);
-    var dsLength = currentDatasetLineChart.length;
-
-    plot
-      .select("#lineChartTitle2")
-      .text(currentDatasetLineChart[dsLength - 1].performance);
-
-    plot
-      .select("path")
-      .transition()
-      .duration(750)
-      .attr("class", "line")
-      .attr("d", line)
-      .style("stroke", colorChosen);
-
-    var path = plot
-      .selectAll(".dot")
-      .data(currentDatasetLineChart)
-      .transition()
-      .duration(750)
-      .attr("class", "dot")
-      .attr("fill", function (d) {
-        return d.performance ==
-          d3.min(currentDatasetLineChart, function (d) {
-            return d.performance;
-          })
-          ? "red"
-          : d.performance ==
-            d3.max(currentDatasetLineChart, function (d) {
-              return d.performance;
-            })
-          ? "green"
-          : "white";
-      })
-      .attr("cx", line.x())
-      .attr("cy", line.y())
-      .attr("r", 3.5)
-      .style("stroke", colorChosen);
-
-    path.selectAll("title").text(function (d) {
-      return d.category + ": " + formatAsInteger(d.performance);
-    });
-
-    svg
-      .selectAll("text.titleText")
-      .attr("x", (width + margin.left + margin.right) / 2)
-      .attr("y", 15)
-      .attr("text-anchor", "middle")
-      .text(group + "'s Performance 2022");
-  };
-});
+//     svg
+//       .selectAll("text.title")
+//       .attr("x", (width + margin.left + margin.right) / 2)
+//       .attr("y", 15)
+//       .attr("class", "title")
+//       .attr("text-anchor", "middle")
+//       .text(group + "'s Income Breakdown 2022");
+//   };
+// });

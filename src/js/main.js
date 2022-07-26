@@ -1,147 +1,234 @@
-var formatAsPercentage = d3.format("%"),
-  formatAsPercentage1Dec = d3.format(".1%"),
-  formatAsInteger = d3.format(","),
-  fsec = d3.time.format("%S s"),
-  fmin = d3.time.format("%M m"),
-  fhou = d3.time.format("%H h"),
-  fwee = d3.time.format("%a"),
-  fdat = d3.time.format("%d d"),
-  fmon = d3.time.format("%b");
+const colorPalette = [
+  "#9819f2",
+  "#7983f2",
+  "#00b8b2",
+  "#1FCCF7",
+  "#79f2a8",
+  "#02d4cd",
+  "#798af2",
+  "#DC0A3B",
+  "#00A19C",
+  "#f29d79",
+  "#00A19C",
+  "#dc79f2",
+  "#f23981",
+  "#79bff2",
+  "#ae79f2",
+  "#79dcf2",
+  "#9796a1",
+  "#23326A",
+  "#bff279",
+  "#228988",
+  "#f2ca79",
+  "#f08080",
+  "#f27991",
+  "#F14AFF",
+  "#941728",
+  "#33714C",
+  "#E0610E",
+  "#EFBD26",
+  "#f279c2",
+  "#ff2800",
+  "#f29d79",
+  "#d679f2",
+  "#dc79f2",
+  "#f23981",
+  "#79bff2",
+];
 
-function dsPieChart() {
-  var dataset = [
-    { category: "Samad", measure: 0.3 },
-    { category: "Phang", measure: 0.25 },
-    { category: "Johan", measure: 0.15 },
-    { category: "Rita", measure: 0.05 },
-    { category: "Lenny", measure: 0.18 },
-    { category: "Pian", measure: 0.04 },
-    { category: "Siti", measure: 0.03 },
-  ];
-
-  var width = 400,
-    height = 400,
-    outerRadius = Math.min(width, height) / 2,
-    innerRadius = outerRadius * 0.999,
-    // for animation
-
-    innerRadiusFinal = outerRadius * 0.5,
-    innerRadiusFinal3 = outerRadius * 0.45,
-    color = d3.scale.category20();
-
-  var vis = d3
-    .select("#pieChart")
-    .append("svg:svg") //create the SVG element
-    .data([dataset]) //associate data
-    .attr("width", width) //set the width and height
-    .attr("height", height)
-    .append("svg:g") //make a group to the chart
-    //move the center of the pie chart
-    .attr("transform", "translate(" + outerRadius + "," + outerRadius + ")");
-
-  var arc = d3.svg
-    .arc() // create <path> elements
-    .outerRadius(outerRadius)
-    .innerRadius(innerRadius);
-  // for animation
-
-  var arcFinal = d3.svg
-    .arc()
-    .innerRadius(innerRadiusFinal)
-    .outerRadius(outerRadius);
-
-  var arcFinal3 = d3.svg
-    .arc()
-    .innerRadius(innerRadiusFinal3)
-    .outerRadius(outerRadius);
-
-  var pie = d3.layout.pie().value(function (d) {
-    return d.measure;
-  });
-
-  var arcs = vis
-    .selectAll("g.slice")
-    .data(pie) //associate the generated pie data
-    .enter() //create <g> elements
-    .append("svg:g") //create a group to hold each slice
-    .attr("class", "slice") //set style in the slices
-    .on("mouseover", mouseover)
-    .on("mouseout", mouseout)
-    .on("click", up);
-
-  arcs
-    .append("svg:path")
-    //set the color for each slice
-    .attr("fill", function (d, i) {
-      return color(i);
-    })
-    .attr("d", arc) // actual SVG path
-    .append("svg:title") //mouseover title
-    .text(function (d) {
-      return d.data.category + ": " + formatAsPercentage(d.data.measure);
-    });
-
-  d3.selectAll("g.slice")
-    .selectAll("path")
-    .transition()
-    .duration(750)
-    .delay(10)
-    .attr("d", arcFinal);
-
-  // Add a label to the larger arcs, translated to the arc centroid
-  arcs
-    .filter(function (d) {
-      return d.endAngle - d.startAngle > 0.1;
-    })
-    .append("svg:text")
-    .attr("dy", ".35em")
-    .attr("text-anchor", "middle")
-    .attr("transform", function (d) {
-      return "translate(" + arcFinal.centroid(d) + ")rotate(" + angle(d) + ")";
-    })
-    .text(function (d) {
-      return formatAsPercentage(d.value);
-    })
-
-    .text(function (d) {
-      return d.data.category;
-    });
-
-  // Computes the label angle of an arc, convert from rad to deg.
-  function angle(d) {
-    var a = ((d.startAngle + d.endAngle) * 90) / Math.PI - 90;
-    return a > 90 ? a - 180 : a;
-  }
-
-  // Pie chart title
-  vis
-    .append("svg:text")
-    .attr("dy", ".35em")
-    .attr("text-anchor", "middle")
-    .text("Revenue 2022")
-    .attr("class", "title");
-
-  function mouseover() {
-    d3.select(this)
-      .select("path")
-      .transition()
-      .duration(750)
-      .attr("d", arcFinal3);
-  }
-
-  function mouseout() {
-    d3.select(this)
-      .select("path")
-      .transition()
-      .duration(750)
-      .attr("d", arcFinal);
-  }
-
-  function up(d, i) {
-    updateBarChart(d.data.category, color(i));
-    updateLineChart(d.data.category, color(i));
-  }
+for (var i = 0; i < 10; i++) {
+  colorPalette.push(...colorPalette);
 }
 
-dsPieChart(); //execute
 var group = "All";
+var cutoff = 30;
+var blur = 0.5;
+
+d3.csv("./src/data/drivers.csv", (driverLookup) => {
+  d3.csv("./src/data/results.csv", function (dataset) {
+    let groupedData = d3
+      .nest()
+      .key((d) => d.driverId)
+      .rollup((leaves) => d3.sum(leaves, (d) => d.points))
+      // .sort((d) => d.points)
+      .entries(dataset);
+    groupedData = groupedData.filter((d) => d.value > 0); // Only get drivers who have points
+    groupedData = groupedData
+      .sort((a, b) => d3.descending(a.value, b.value))
+      .slice(0, cutoff); // Get top 30 drivers
+
+    function dsPieChart(data) {
+      var width = 450,
+        height = 450,
+        margin = 0;
+
+      var radius = Math.min(width, height) / 2 - margin;
+
+      var Tooltip = d3
+        .select("#pieChart")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "2.5px")
+        .style("border-radius", "5px")
+        .style("padding", "5px")
+        .style("position", "absolute");
+
+      function mousemove(d) {
+        var driver = driverLookup[d.data.value.key - 1];
+        Tooltip.html(
+          `#${d.index + 1} - (${d.value}pts) ${driver.forename} ${
+            driver.surname
+          } [${driver.code}]`
+        )
+          .style("font-family", "Verdana")
+          .style("border-color", colorPalette[d.data.value.key - 1])
+          .style("left", d3.event.pageX + 10 + "px")
+          .style("top", d3.event.pageY + 10 + "px");
+      }
+
+      function mouseleave(d) {
+        Tooltip.style("opacity", 0);
+        d3.select(this)
+          .transition()
+          .duration(250)
+          .style("opacity", (data) => (group == data.data.value.key ? 1 : blur))
+          .style("stroke-width", (data) =>
+            group == data.data.value.key ? "5px" : "0px"
+          );
+      }
+
+      function mouseover(d) {
+        Tooltip.style("opacity", 1);
+        d3.select(this)
+          .transition()
+          .duration(100)
+          .style("opacity", 1)
+          .style("stroke", "white")
+          .style("stroke-width", "10px");
+      }
+
+      function up(d) {
+        var currDriver = driverLookup[d.data.value.key - 1];
+        // updateBarChart(d.data.category, color(i));
+        updateLineChart(d.data.value.key, colorPalette[d.data.value.key - 1]);
+        d3.selectAll("allSlices.path").style("opacity", blur);
+        d3.selectAll("#selectedDriver")
+          .text(
+            `#${d.index + 1} - ${currDriver.forename} ${currDriver.surname}`
+          )
+          .style("fill", colorPalette[d.data.value.key - 1]);
+        group = d.data.value.key;
+        resetSlices();
+      }
+
+      function resetSlices() {
+        d3.selectAll(".uhSlice")
+          .transition()
+          .duration(50)
+          .style("opacity", (data) => (group == data.data.value.key ? 1 : blur))
+          .style("stroke-width", (data) =>
+            group == data.data.value.key ? "10px" : "0px"
+          );
+      }
+
+      var resetGroups = function () {
+        group = "All";
+        resetSlices();
+        updateLineChart(group, "lightcoral");
+        d3.selectAll("#selectedDriver")
+          .text("Overall Drivers")
+          .style("fill", "lightslategray");
+      };
+
+      var svg = d3
+        .select("#pieChart")
+        .append("svg")
+        .data(data)
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+      var pie = d3.pie().value((d) => {
+        return d.value.value;
+      })(d3.entries(data));
+
+      var arc = d3
+        .arc()
+        .innerRadius(radius * 0.55)
+        .outerRadius(radius * 1);
+
+      svg
+        .selectAll("allSlices")
+        .data(pie)
+        .enter()
+        .append("path")
+        .attr("class", "uhSlice")
+        .attr("d", arc)
+        .attr("fill", (d) => colorPalette[d.data.value.key - 1])
+        .style("opacity", blur)
+        .style("stroke", "white")
+        .style("stroke-width", "0px")
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseleave", mouseleave)
+        .on("click", up);
+
+      // Pie chart title
+      svg
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", -40)
+        .text("Top " + cutoff)
+        .attr("class", "title");
+
+      // Pie chart title
+      svg
+        .append("text")
+        .attr("y", -20)
+        .attr("text-anchor", "middle")
+        .text("Formula One Drivers")
+        .attr("class", "title");
+
+      // Pie chart title
+      svg
+        .append("text")
+        .attr("text-anchor", "middle")
+        .text("(by total career points)")
+        .attr("class", "subtitle");
+
+      // Pie chart title
+      svg
+        .append("text")
+        .attr("id", "selectedDriver")
+        .attr("text-anchor", "middle")
+        .attr("y", 40)
+        .text("Overall Drivers")
+        .attr("class", "subtitle")
+        .style("font-weight", "bold");
+
+      // Pie chart title
+      svg
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("y", 60)
+        .text("RESET GROUPS")
+        .attr("class", "subtitle")
+        .style("fill", "lightgrey")
+        .on("mouseover", function () {
+          d3.select(this).transition().duration(250).style("fill", "black");
+        })
+        .on("mouseleave", function () {
+          d3.select(this).transition().duration(250).style("fill", "lightgrey");
+        })
+        .on("click", resetGroups);
+
+      svg.append("button");
+    }
+
+    dsPieChart(groupedData);
+  });
+});
