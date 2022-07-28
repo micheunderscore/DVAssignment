@@ -57,9 +57,11 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
     groupedData = groupedData.slice(0, cutoff); // Get top 30 drivers
 
     function dsPieChart(data) {
-      var width = 450,
-        height = 450,
-        margin = 0;
+      var margin = 25,
+        width =
+          document.getElementById("pieChart").parentElement.clientWidth -
+          margin,
+        height = 450;
 
       var radius = Math.min(width, height) / 2 - margin;
 
@@ -114,6 +116,9 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         var currDriver = driverLookup[d.data.value.key - 1];
         // updateLineChart(d.data.value.key, colorPalette[i]); // TODO: Update color selection
         updateLineChart(d.data.value.key, colorPalette[d.data.value.key - 1]);
+        updateBarChart(d.data.value.key, colorPalette[d.data.value.key - 1]);
+        updateTeamChart(d.data.value.key, colorPalette[d.data.value.key - 1]);
+
         d3.selectAll("allSlices.path").style("opacity", blur);
         d3.selectAll("#selectedDriver")
           .text(
@@ -139,6 +144,8 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         group = "All";
         resetSlices();
         updateLineChart(group, "lightcoral");
+        updateBarChart(group, "lightcoral");
+        updateTeamChart(group, "lightcoral");
         d3.selectAll("#selectedDriver")
           .text("Overall Drivers")
           .style("fill", "lightslategray");

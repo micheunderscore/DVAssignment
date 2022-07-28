@@ -1,3 +1,8 @@
+/*
+Suggestions:
+1. Assign a unique id/class for best/worst pins on line chart. And then just retrieve from dom and get array length for the count. 
+*/
+
 // LINE CHART ==============================================================================
 var group = "All";
 var maxPos = 30;
@@ -58,13 +63,14 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
       }
 
       function dsLineChart(usedGroup, usedColor) {
+        let isAll = usedGroup == "All";
         let groupedData = datasetLineChartChosen(usedGroup);
         let bestPos = Math.floor(d3.min(groupedData, (d) => d.value));
         let worstPos = Math.floor(d3.max(groupedData, (d) => d.value));
 
         let margin = { top: 50, right: 20, bottom: 50, left: 20 },
           width =
-            (document.getElementById("headerCharts").parentElement.clientWidth -
+            (document.getElementById("lineChart").parentElement.clientWidth -
               margin.right -
               margin.left) *
             0.95,
@@ -73,11 +79,11 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
         let x = d3
           .scaleLinear()
           .domain([0, groupedData.length - 1])
-          .range(usedGroup == "All" ? [width, 0] : [0, width]);
+          .range(isAll ? [width, 0] : [0, width]);
 
         let y = d3
           .scaleLinear()
-          .domain(usedGroup == "All" ? [4, 15] : [0, maxPos])
+          .domain(isAll ? [4, 15] : [0, maxPos])
           .range([0, height]);
 
         let line = d3
@@ -134,11 +140,11 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
           .append("rect")
           .attr("x", margin.left)
           .attr("y", margin.top)
-          .attr("opacity", 0.5)
+          .attr("width", width + (isAll ? margin.right : 0))
+          .attr("height", height)
+          .attr("opacity", 1)
           .style("fill", "none")
           .style("pointer-events", "all")
-          .attr("width", width)
-          .attr("height", height)
           .on("mouseover", mouseover)
           .on("mousemove", mousemove)
           .on("mouseout", mouseout);
@@ -151,26 +157,30 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
         }
 
         function mousemove() {
-          let i = Math.floor(x.invert(d3.mouse(this)[0] - margin.left));
+          let i = Math.ceil(x.invert(d3.mouse(this)[0] - margin.left));
           if (i < 0) return;
           let selectedData = groupedData[i];
-          let race = raceLookup.filter(
-            (obj) => obj.raceId == dataset[selectedData.key].raceId
+          let result = dataset.filter(
+            (obj) => obj.resultId == selectedData?.key
           )[0];
-          let driver = driverLookup[selectedData.key - 1];
+          let race = raceLookup.filter(
+            (obj) => obj?.raceId == result?.raceId
+          )[0];
+
+          let driver = driverLookup[selectedData?.key - 1];
           focus
             .attr("cx", x(i) + margin.left)
-            .attr("cy", y(selectedData.value) + margin.top);
+            .attr("cy", y(selectedData?.value) + margin.top);
           focusText2.text(
             `${
-              usedGroup == "All"
+              isAll
                 ? `${driver.forename} ${driver.surname}`
-                : `${race.year} ${race.name}`
+                : `${race?.year} ${race?.name}`
             }`
           );
           focusText1.text(
-            `${usedGroup == "All" ? "Driver" : "Race"} #${i + 1}${
-              usedGroup == "All" ? " Average " : " "
+            `${isAll ? "Driver" : "Race"} #${i + 1}${
+              isAll ? " Average " : " "
             }Position: ${Math.floor(selectedData.value)}`
           );
         }
@@ -200,9 +210,8 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
               : "white"
           )
           .attr("opacity", (d) =>
-            (d.value == d3.min(groupedData, (d) => d.value) ||
-              d.value == d3.max(groupedData, (d) => d.value)) &&
-            usedGroup != "All"
+            d.value == d3.min(groupedData, (d) => d.value) ||
+            d.value == d3.max(groupedData, (d) => d.value)
               ? 1
               : 0
           )
@@ -214,7 +223,7 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
           .append("text")
           .text(
             `${
-              usedGroup == "All"
+              isAll
                 ? "Overall Driver"
                 : `${driverLookup[usedGroup - 1].forename} ${
                     driverLookup[usedGroup - 1].surname
@@ -254,7 +263,7 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
           .attr("y", margin.top + height)
           .text(
             `Best ${
-              usedGroup == "All" ? "Average" : ""
+              isAll ? "Average" : ""
             } Grid Position #${bestPos} (${bestCount}x)`
           )
           .style("font-size", "15px")
@@ -266,7 +275,7 @@ d3.csv("./src/data/races.csv", (raceLookup) => {
           .attr("y", margin.top + height + 20)
           .text(
             `Worst ${
-              usedGroup == "All" ? "Average" : ""
+              isAll ? "Average" : ""
             } Grid Position #${worstPos} (${worstCount}x)`
           )
           .style("font-size", "15px")

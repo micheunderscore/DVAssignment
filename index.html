@@ -13,15 +13,20 @@
       <div class="textbox">
         <h1 class="title">Top 30 Point-Scoring Formula One Drivers</h1>
       </div>
-      <div class="textbox">
-        <div id="headerCharts" class="hBox">
-          <div id="pieChart" class="displayCharts"></div>
-          <div id="lineChart" class="displayCharts"></div>
-        </div>
+      <div id="chartBox" class="textbox">
+        <div id="pieChart" class="displayCharts"></div>
+        <br />
+        <hr />
+        <br />
+        <div id="lineChart" class="displayCharts"></div>
         <br />
         <hr />
         <br />
         <div id="barChart" class="displayCharts"></div>
+        <br />
+        <hr />
+        <br />
+        <div id="teamChart" class="displayCharts"></div>
         <p class="reference">
           Source: Formula 1 World Championship (1950 - 2022) | Rohan Rao
           (Retrieved 20-7-22)
@@ -82,8 +87,13 @@
 
     <!-- Load d3.js -->
     <script src="https://d3js.org/d3.v4.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+    <!-- Function for radial charts -->
+    <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3-scale-radial.js"></script>
+
+    <!-- PIE CHART -->
     <script type="module" src="./src/js/main.js"></script>
+
+    <!-- LINE CHART -->
     <script type="module" src="./src/js/lineChart.js"></script>
 
     <!-- INTAN WORKSPACE -->
