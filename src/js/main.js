@@ -1,3 +1,4 @@
+// TODO: Update color selection
 const colorPalette = [
   "#9819f2",
   "#7983f2",
@@ -50,12 +51,10 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
       .nest()
       .key((d) => d.driverId)
       .rollup((leaves) => d3.sum(leaves, (d) => d.points))
-      // .sort((d) => d.points)
-      .entries(dataset);
+      .entries(dataset)
+      .sort((a, b) => d3.descending(a.value, b.value));
     groupedData = groupedData.filter((d) => d.value > 0); // Only get drivers who have points
-    groupedData = groupedData
-      .sort((a, b) => d3.descending(a.value, b.value))
-      .slice(0, cutoff); // Get top 30 drivers
+    groupedData = groupedData.slice(0, cutoff); // Get top 30 drivers
 
     function dsPieChart(data) {
       var width = 450,
@@ -76,7 +75,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         .style("padding", "5px")
         .style("position", "absolute");
 
-      function mousemove(d) {
+      function mousemove(d, i) {
         var driver = driverLookup[d.data.value.key - 1];
         Tooltip.html(
           `#${d.index + 1} - (${d.value}pts) ${driver.forename} ${
@@ -84,6 +83,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
           } [${driver.code}]`
         )
           .style("font-family", "Verdana")
+          // .style("border-color", colorPalette[i]) // TODO: Update color selection
           .style("border-color", colorPalette[d.data.value.key - 1])
           .style("left", d3.event.pageX + 10 + "px")
           .style("top", d3.event.pageY + 10 + "px");
@@ -110,15 +110,16 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
           .style("stroke-width", "10px");
       }
 
-      function up(d) {
+      function up(d, i) {
         var currDriver = driverLookup[d.data.value.key - 1];
-        // updateBarChart(d.data.category, color(i));
+        // updateLineChart(d.data.value.key, colorPalette[i]); // TODO: Update color selection
         updateLineChart(d.data.value.key, colorPalette[d.data.value.key - 1]);
         d3.selectAll("allSlices.path").style("opacity", blur);
         d3.selectAll("#selectedDriver")
           .text(
             `#${d.index + 1} - ${currDriver.forename} ${currDriver.surname}`
           )
+          // .style("fill", colorPalette[i]); // TODO: Update color selection
           .style("fill", colorPalette[d.data.value.key - 1]);
         group = d.data.value.key;
         resetSlices();
@@ -168,6 +169,7 @@ d3.csv("./src/data/drivers.csv", (driverLookup) => {
         .append("path")
         .attr("class", "uhSlice")
         .attr("d", arc)
+        // .attr("fill", (d, i) => colorPalette[i]) // TODO: Update color selection
         .attr("fill", (d) => colorPalette[d.data.value.key - 1])
         .style("opacity", blur)
         .style("stroke", "white")

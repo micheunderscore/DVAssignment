@@ -1,5 +1,9 @@
 var margin = { top: 30, right: 30, bottom: 30, left: 60 },
-  width = window.innerWidth - margin.left - margin.right - 500,
+  width =
+    (document.getElementById("barChart").parentElement.clientWidth -
+      margin.left -
+      margin.right) *
+    0.95,
   height = 400 - margin.top - margin.bottom;
 
 //Step 4: Parse the data from local machine
@@ -9,21 +13,18 @@ d3.csv("./src/data/drivers.csv", function (driverLookup) {
       function datasetChartChosen(usedGroup) {
         let outData = {};
 
-        console.log(dataset);
-
         switch (usedGroup) {
           case "All":
             outData = d3
               .nest()
-              .key((d) => d.driverId)
-              .rollup((leaves) => d3.mean(leaves, (d) => d.positionOrder))
+              .key((d) => d.raceId)
               .entries(dataset);
             break;
           default:
-            let temp = d3
+            let driverResults = d3
               .nest()
               .key((d) => d.driverId)
-              .entries(dataset)
+              .entries(resultsLookup)
               .filter((d) => {
                 return (
                   d.key == usedGroup &&
@@ -34,11 +35,12 @@ d3.csv("./src/data/drivers.csv", function (driverLookup) {
                   )
                 );
               })[0].values;
-            outData = d3
-              .nest()
-              .key((d) => d.resultId)
-              .rollup((leaves) => d3.sum(leaves, (d) => d.positionOrder))
-              .entries(temp);
+            outData = driverResults;
+            // outData = d3
+            //   .nest()
+            //   .key((d) => d.resultId)
+            //   .rollup((leaves) => d3.sum(leaves, (d) => d.positionOrder))
+            //   .entries(temp);
             break;
         }
 
@@ -46,6 +48,7 @@ d3.csv("./src/data/drivers.csv", function (driverLookup) {
       }
 
       function dsBarChart(usedGroup, colorChosen) {
+        // console.log(datasetChartChosen(usedGroup));
         var groupedData = dataset;
 
         //Step 3: Drawing graph with SVG
@@ -127,7 +130,7 @@ d3.csv("./src/data/drivers.csv", function (driverLookup) {
         dsBarChart(usedGroup, colorChosen);
       };
 
-      updateBarChart("All", "lightcoral");
+      updateBarChart(1, "lightcoral");
     });
   });
 });

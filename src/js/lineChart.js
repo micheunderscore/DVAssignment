@@ -1,228 +1,299 @@
 // LINE CHART ==============================================================================
 var group = "All";
-d3.csv("./src/data/drivers.csv", (driverLookup) => {
-  d3.csv("./src/data/results.csv", function (dataset) {
-    function datasetLineChartChosen(usedGroup) {
-      let outData = {};
+var maxPos = 30;
+d3.csv("./src/data/races.csv", (raceLookup) => {
+  d3.csv("./src/data/drivers.csv", (driverLookup) => {
+    d3.csv("./src/data/results.csv", function (dataset) {
+      function datasetLineChartChosen(usedGroup) {
+        let outData = {};
+        switch (usedGroup) {
+          case "All":
+            var ref = d3
+              .nest()
+              .key((d) => d.driverId)
+              .rollup((leaves) => d3.sum(leaves, (d) => d.points))
+              .entries(dataset)
+              .sort((a, b) => d3.descending(a.value, b.value));
+            ref = ref.slice(0, 30);
 
-      switch (usedGroup) {
-        case "All":
-          outData = d3
-            .nest()
-            .key((d) => d.driverId)
-            .rollup((leaves) => d3.mean(leaves, (d) => d.positionOrder))
-            .entries(dataset);
-          break;
-        default:
-          let temp = d3
-            .nest()
-            .key((d) => d.driverId)
-            .entries(dataset)
-            .filter((d) => {
-              return (
-                d.key == usedGroup &&
-                d.values.some(
-                  (d) =>
-                    d.positionOrder != undefined &&
-                    !Number.isNaN(d.positionOrder)
-                )
-              );
-            })[0].values;
-          outData = d3
-            .nest()
-            .key((d) => d.resultId)
-            .rollup((leaves) => d3.sum(leaves, (d) => d.positionOrder))
-            .entries(temp);
-          break;
+            outData = d3
+              .nest()
+              .key((d) => d.driverId)
+              .rollup((leaves) => d3.mean(leaves, (d) => d.positionOrder))
+              .entries(dataset)
+              .filter((d) => ref.some((f) => d.key == f.key))
+              .sort((a, b) => {
+                var refKeys = ref.reduce((i, j) => {
+                  i.push(j["key"]);
+                  return i;
+                }, []);
+                return refKeys.indexOf(a.key) - refKeys.indexOf(b.key);
+              });
+            break;
+          default:
+            let temp = d3
+              .nest()
+              .key((d) => d.driverId)
+              .entries(dataset)
+              .filter((d) => {
+                return (
+                  d.key == usedGroup &&
+                  d.values.some(
+                    (d) =>
+                      d.positionOrder != undefined &&
+                      !Number.isNaN(d.positionOrder)
+                  )
+                );
+              })[0].values;
+
+            outData = d3
+              .nest()
+              .key((d) => d.resultId)
+              .rollup((leaves) => d3.sum(leaves, (d) => d.positionOrder))
+              .entries(temp);
+            break;
+        }
+
+        return outData;
       }
 
-      return outData;
-    }
+      function dsLineChart(usedGroup, usedColor) {
+        let groupedData = datasetLineChartChosen(usedGroup);
+        let bestPos = Math.floor(d3.min(groupedData, (d) => d.value));
+        let worstPos = Math.floor(d3.max(groupedData, (d) => d.value));
 
-    function dsLineChart(usedGroup, usedColor) {
-      let groupedData = datasetLineChartChosen(usedGroup);
+        let margin = { top: 50, right: 20, bottom: 50, left: 20 },
+          width =
+            (document.getElementById("headerCharts").parentElement.clientWidth -
+              margin.right -
+              margin.left) *
+            0.95,
+          height = 300 - margin.top - margin.bottom;
 
-      var margin = { top: 100, right: 0, bottom: 50, left: 0 },
-        width = window.innerWidth - 500,
-        height = 200;
+        let x = d3
+          .scaleLinear()
+          .domain([0, groupedData.length - 1])
+          .range(usedGroup == "All" ? [width, 0] : [0, width]);
 
-      console.log();
+        let y = d3
+          .scaleLinear()
+          .domain(usedGroup == "All" ? [4, 15] : [0, maxPos])
+          .range([0, height]);
 
-      var x = d3
-        .scaleLinear()
-        .domain([0, groupedData.length - 1])
-        .range([0, width]);
+        let line = d3
+          .line()
+          .x((d, i) => x(i))
+          .y((d) => {
+            return y(d.value);
+          });
 
-      var y = d3.scaleLinear().domain([0, 50]).range([0, height]);
+        let svg = d3
+          .select("#lineChart")
+          .append("svg")
+          .attr("id", "thisLineChart")
+          .datum(groupedData)
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom);
 
-      var line = d3
-        .line()
-        .x((d, i) => x(i))
-        .y((d) => {
-          return y(d.value);
+        let plot = svg
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")"
+          )
+          .attr("id", "lineChartPlot");
+
+        // Create the circle that travels along the curve of chart
+        let focus = svg
+          .append("g")
+          .append("circle")
+          .style("fill", "none")
+          .attr("stroke", "black")
+          .attr("r", 5)
+          .style("opacity", 0);
+
+        // Create the text that travels along the curve of chart
+        let focusText1 = svg
+          .append("text")
+          .attr("x", width)
+          .attr("y", margin.top + height + 20)
+          .attr("text-anchor", "end")
+          .style("opacity", 0)
+          .style("text-align", "left");
+
+        let focusText2 = svg
+          .append("text")
+          .attr("x", width)
+          .attr("y", margin.top + height)
+          .attr("text-anchor", "end")
+          .style("opacity", 0)
+          .style("text-align", "left");
+
+        // Create a rect on top of the svg area: this rectangle recovers mouse position
+        svg
+          .append("rect")
+          .attr("x", margin.left)
+          .attr("y", margin.top)
+          .attr("opacity", 0.5)
+          .style("fill", "none")
+          .style("pointer-events", "all")
+          .attr("width", width)
+          .attr("height", height)
+          .on("mouseover", mouseover)
+          .on("mousemove", mousemove)
+          .on("mouseout", mouseout);
+
+        // What happens when the mouse move -> show the annotations at the right positions.
+        function mouseover() {
+          focus.style("opacity", 1);
+          focusText1.style("opacity", 1);
+          focusText2.style("opacity", 1);
+        }
+
+        function mousemove() {
+          let i = Math.floor(x.invert(d3.mouse(this)[0] - margin.left));
+          if (i < 0) return;
+          let selectedData = groupedData[i];
+          let race = raceLookup.filter(
+            (obj) => obj.raceId == dataset[selectedData.key].raceId
+          )[0];
+          let driver = driverLookup[selectedData.key - 1];
+          focus
+            .attr("cx", x(i) + margin.left)
+            .attr("cy", y(selectedData.value) + margin.top);
+          focusText2.text(
+            `${
+              usedGroup == "All"
+                ? `${driver.forename} ${driver.surname}`
+                : `${race.year} ${race.name}`
+            }`
+          );
+          focusText1.text(
+            `${usedGroup == "All" ? "Driver" : "Race"} #${i + 1}${
+              usedGroup == "All" ? " Average " : " "
+            }Position: ${Math.floor(selectedData.value)}`
+          );
+        }
+        function mouseout() {
+          focus.style("opacity", 0);
+          focusText1.style("opacity", 0);
+          focusText2.style("opacity", 0);
+        }
+
+        plot
+          .append("path")
+          .attr("class", "line")
+          .attr("d", line)
+          .style("stroke", usedColor);
+
+        plot
+          .selectAll(".dot")
+          .data(groupedData)
+          .enter()
+          .append("circle")
+          .attr("class", "dot")
+          .attr("fill", (d) =>
+            d.value == d3.max(groupedData, (d) => d.value)
+              ? "red"
+              : d.value == d3.min(groupedData, (d) => d.value)
+              ? "green"
+              : "white"
+          )
+          .attr("opacity", (d) =>
+            (d.value == d3.min(groupedData, (d) => d.value) ||
+              d.value == d3.max(groupedData, (d) => d.value)) &&
+            usedGroup != "All"
+              ? 1
+              : 0
+          )
+          .attr("cx", line.x())
+          .attr("cy", line.y())
+          .attr("r", 3.5);
+
+        svg
+          .append("text")
+          .text(
+            `${
+              usedGroup == "All"
+                ? "Overall Driver"
+                : `${driverLookup[usedGroup - 1].forename} ${
+                    driverLookup[usedGroup - 1].surname
+                  }'s`
+            } Career Average Grid Position`
+          )
+          .attr("id", "chartTitle1")
+          .attr("class", "titleText")
+          .attr("x", (margin.left + width + margin.right) / 2)
+          .attr("y", margin.top - 10);
+
+        plot
+          .append("text")
+          .text(Math.floor(d3.mean(groupedData, (d) => d.value)))
+          .attr("id", "chartTitle2")
+          .attr("x", width / 2)
+          .attr("y", height / 2);
+
+        let worstCount = 0;
+        let bestCount = 0;
+        groupedData.forEach((d) => {
+          switch (Math.floor(d.value)) {
+            case worstPos:
+              worstCount++;
+              break;
+            case bestPos:
+              bestCount++;
+              break;
+            default:
+              break;
+          }
         });
 
-      var svg = d3
-        .select("#lineChart")
-        .append("svg")
-        .attr("id", "thisLineChart")
-        .datum(groupedData)
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom);
+        svg
+          .append("text")
+          .attr("x", margin.left + 20)
+          .attr("y", margin.top + height)
+          .text(
+            `Best ${
+              usedGroup == "All" ? "Average" : ""
+            } Grid Position #${bestPos} (${bestCount}x)`
+          )
+          .style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
 
-      var plot = svg
-        .append("g")
-        .attr(
-          "transform",
-          "translate(" + margin.left + "," + (margin.top + height) / 3 + ")"
-        )
-        .attr("id", "lineChartPlot");
+        svg
+          .append("text")
+          .attr("x", margin.left + 20)
+          .attr("y", margin.top + height + 20)
+          .text(
+            `Worst ${
+              usedGroup == "All" ? "Average" : ""
+            } Grid Position #${worstPos} (${worstCount}x)`
+          )
+          .style("font-size", "15px")
+          .attr("alignment-baseline", "middle");
 
-      // Create the circle that travels along the curve of chart
-      var focus = svg
-        .append("g")
-        .append("circle")
-        .style("fill", "none")
-        .attr("stroke", "black")
-        .attr("r", 5)
-        .style("opacity", 0);
+        svg
+          .append("circle")
+          .attr("cx", margin.left + 10)
+          .attr("cy", margin.top + height)
+          .attr("r", 6)
+          .style("fill", "green");
 
-      // Create the text that travels along the curve of chart
-      var focusText = svg
-        .append("text")
-        .attr("x", margin.left + width - 200)
-        .attr("y", margin.top + height)
-        .style("opacity", 0)
-        .attr("text-anchor", "right")
-        .attr("alignment-baseline", "middle");
-
-      // Create a rect on top of the svg area: this rectangle recovers mouse position
-      svg
-        .append("rect")
-        .attr("y", margin.top)
-        .style("fill", "none")
-        .style("pointer-events", "all")
-        .attr("width", width)
-        .attr("height", height)
-        .on("mouseover", mouseover)
-        .on("mousemove", mousemove)
-        .on("mouseout", mouseout);
-
-      // What happens when the mouse move -> show the annotations at the right positions.
-      function mouseover() {
-        focus.style("opacity", 1);
-        focusText.style("opacity", 1);
+        svg
+          .append("circle")
+          .attr("cx", margin.left + 10)
+          .attr("cy", margin.top + height + 20)
+          .attr("r", 6)
+          .style("fill", "red");
       }
 
-      function mousemove() {
-        var x0 = x.invert(d3.mouse(this)[0]);
-        var i = Math.floor(x0);
-        var selectedData = groupedData[i];
-        focus.attr("cx", x(i)).attr("cy", y(selectedData.value) + margin.top);
-        focusText.text(
-          "Race #" + i + "  -  " + "Position: " + Math.floor(selectedData.value)
-        );
-      }
-      function mouseout() {
-        focus.style("opacity", 0);
-        focusText.style("opacity", 0);
-      }
+      /* ** UPDATE CHART ** */
+      window.updateLineChart = function (usedGroup, colorChosen) {
+        d3.selectAll("#thisLineChart").remove();
+        dsLineChart(usedGroup, colorChosen);
+      };
 
-      plot
-        .append("path")
-        .attr("class", "line")
-        .attr("d", line)
-        .style("stroke", usedColor);
-
-      plot
-        .selectAll(".dot")
-        .data(groupedData)
-        .enter()
-        .append("circle")
-        .attr("class", "dot")
-        .attr("fill", (d) =>
-          d.value == d3.max(groupedData, (d) => d.value)
-            ? "red"
-            : d.value == d3.min(groupedData, (d) => d.value)
-            ? "green"
-            : "white"
-        )
-        .attr("opacity", (d) =>
-          (d.value == d3.min(groupedData, (d) => d.value) ||
-            d.value == d3.max(groupedData, (d) => d.value)) &&
-          usedGroup != "All"
-            ? 1
-            : 0
-        )
-        .attr("cx", line.x())
-        .attr("cy", line.y())
-        .attr("r", 3.5);
-
-      svg
-        .append("text")
-        .text(
-          `${
-            usedGroup == "All"
-              ? "Overall Driver"
-              : `${driverLookup[usedGroup - 1].forename} ${
-                  driverLookup[usedGroup - 1].surname
-                }'s`
-          } Career Average Grid Position`
-        )
-        .attr("id", "chartTitle1")
-        .attr("class", "titleText")
-        .attr("x", (margin.left + width + margin.right) / 2)
-        .attr("y", margin.top / 2);
-
-      plot
-        .append("text")
-        .text(Math.floor(d3.mean(groupedData, (d) => d.value)))
-        .attr("id", "chartTitle2")
-        .attr("x", width / 2)
-        .attr("y", height / 2);
-
-      svg
-        .append("circle")
-        .attr("cx", margin.left + 10)
-        .attr("cy", margin.top + height)
-        .attr("r", 6)
-        .style("fill", "green");
-      svg
-        .append("circle")
-        .attr("cx", margin.left + 200)
-        .attr("cy", margin.top + height)
-        .attr("r", 6)
-        .style("fill", "red");
-      svg
-        .append("text")
-        .attr("x", margin.left + 20)
-        .attr("y", margin.top + height)
-        .text(
-          `Best Grid Position #${Math.floor(
-            d3.min(groupedData, (d) => d.value)
-          )}`
-        )
-        .style("font-size", "15px")
-        .attr("alignment-baseline", "middle");
-      svg
-        .append("text")
-        .attr("x", margin.left + 210)
-        .attr("y", margin.top + height)
-        .text(
-          `Worst Grid Position #${Math.floor(
-            d3.max(groupedData, (d) => d.value)
-          )}`
-        )
-        .style("font-size", "15px")
-        .attr("alignment-baseline", "middle");
-    }
-
-    /* ** UPDATE CHART ** */
-    window.updateLineChart = function (usedGroup, colorChosen) {
-      d3.selectAll("#thisLineChart").remove();
-      dsLineChart(usedGroup, colorChosen);
-    };
-
-    updateLineChart(group, "lightcoral");
+      updateLineChart(group, "lightcoral");
+    });
   });
 });
